@@ -31,9 +31,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Third-party apps
     "drf_spectacular",
+    "rest_framework",
     # Internal Apps
     "account",
-    "rest_framework",
     "server",
 ]
 
@@ -66,8 +66,11 @@ TEMPLATES = [
 ]
 
 REST_FRAMEWORK = {
-    # YOUR SETTINGS
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
+    ],
 }
 
 WSGI_APPLICATION = "mbchat.wsgi.application"
