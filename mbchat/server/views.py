@@ -1,3 +1,4 @@
+from django.db.models import Count
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from rest_framework.response import Response
@@ -15,6 +16,7 @@ class ServerListViewSet(viewsets.ViewSet):
         quantity = request.query_params.get("quantity")
         by_user = request.query_params.get("by_user") == "true"
         server_id = request.query_params.get("server_id")
+        with_num_members = request.query_params.get("with_num_members") == "true"
 
         if by_user or server_id and not request.user.is_authenticated:
             raise AuthenticationFailed()
@@ -24,6 +26,9 @@ class ServerListViewSet(viewsets.ViewSet):
 
         if by_user:
             self.queryset = self.queryset.filter(member=request.user.id)
+
+        if with_num_members:
+            self.queryset = self.queryset.annotate(num_members=Count("member"))
 
         if quantity:
             self.queryset = self.queryset[: int(quantity)]
@@ -36,5 +41,5 @@ class ServerListViewSet(viewsets.ViewSet):
             except ValueError:
                 raise ValidationError(detail="Server value error", code=403)
 
-        serializer = ServerSerializer(self.queryset, many=True)
+        serializer = ServerSerializer(self.queryset, many=True, context={"num_members": with_num_members})
         return Response(serializer.data)
